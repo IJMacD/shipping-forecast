@@ -88,7 +88,29 @@ function formatOutput(galeWarnings, areaForecasts) {
 
             el.appendChild(forecastEl);
 
-            forecastEl.textContent = af.forecast;
+            const fParts = af.forecast.split("\n");
+
+            const windEl = outDoc.createElement("Wind");
+            windEl.textContent = fParts[0];
+            forecastEl.appendChild(windEl);
+
+            forecastEl.appendChild(outDoc.createTextNode("\n"));
+
+            const seaEl = outDoc.createElement("SeaConditions");
+            seaEl.textContent = fParts[1];
+            forecastEl.appendChild(seaEl);
+
+            forecastEl.appendChild(outDoc.createTextNode("\n"));
+
+            const precipEl = outDoc.createElement("Precipitation");
+            precipEl.textContent = fParts[2];
+            forecastEl.appendChild(precipEl);
+
+            forecastEl.appendChild(outDoc.createTextNode("\n"));
+
+            const visEl = outDoc.createElement("Visibility");
+            visEl.textContent = fParts[3];
+            forecastEl.appendChild(visEl);
 
             prevForecast = af.forecast;
             prevForecastEl = forecastEl;
