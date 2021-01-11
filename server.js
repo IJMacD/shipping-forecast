@@ -63,24 +63,36 @@ function formatOutput(galeWarnings, areaForecasts) {
         warningsEl.appendChild(el);
     }
 
-    // const areasEl = outDoc.createElement("AreaForecast");
-    // root.appendChild(areasEl);
+    let prevForecast;
+    let prevForecastEl;
+
     for (const af of areaForecasts) {
-        const el = outDoc.createElement("AreaForecast");
+        if (af.forecast === prevForecast) {
+            const areaEl = outDoc.createElement("Area");
 
-        root.appendChild(el);
+            prevForecastEl.parentNode.insertBefore(areaEl, prevForecastEl);
 
-        const areaEl = outDoc.createElement("Area");
+            areaEl.textContent = af.area;
+        } else {
+            const el = outDoc.createElement("AreaForecast");
 
-        el.appendChild(areaEl);
+            root.appendChild(el);
 
-        areaEl.textContent = af.area;
+            const areaEl = outDoc.createElement("Area");
 
-        const forecastEl = outDoc.createElement("Forecast");
+            el.appendChild(areaEl);
 
-        el.appendChild(forecastEl);
+            areaEl.textContent = af.area;
 
-        forecastEl.textContent = af.forecast;
+            const forecastEl = outDoc.createElement("Forecast");
+
+            el.appendChild(forecastEl);
+
+            forecastEl.textContent = af.forecast;
+
+            prevForecast = af.forecast;
+            prevForecastEl = forecastEl;
+        }
     }
 
     const xml = serializer.serializeToString(outDoc);
