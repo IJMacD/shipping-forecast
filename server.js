@@ -26,7 +26,7 @@ const server = http.createServer((request, response) => {
 
         const xml = formatOutput(galeWarnings, areaForecasts);
 
-        response.writeHead(200, "OK", { "Content-Type": "text/xml" });
+        response.writeHead(200, "OK", { "Content-Type": "text/xml", "Access-Control-Allow-Origin": "*" });
 
         response.write(`<?xml version="1.0" encoding="UTF-8"?>`);
 
