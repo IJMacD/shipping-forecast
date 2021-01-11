@@ -51,16 +51,23 @@ function formatOutput(galeWarnings, areaForecasts) {
 
     outDoc.appendChild(root);
 
-    const warningsEl = outDoc.createElement("GaleWarnings");
+    if (galeWarnings.length) {
+        const warningsEl = outDoc.createElement("GaleWarnings");
+        root.appendChild(warningsEl);
+        warningsEl.appendChild(outDoc.createTextNode("There are warnings of gales in "));
 
-    root.appendChild(warningsEl);
+        for (const gw of galeWarnings) {
+            const el = outDoc.createElement("Area");
 
-    for (const gw of galeWarnings) {
-        const el = outDoc.createElement("Area");
+            el.textContent = gw;
 
-        el.textContent = gw;
+            warningsEl.appendChild(el);
 
-        warningsEl.appendChild(el);
+            warningsEl.appendChild(outDoc.createTextNode(", "));
+        }
+
+        warningsEl.childNodes.item(warningsEl.childNodes.length - 3).textContent = " and ";
+        warningsEl.childNodes.item(warningsEl.childNodes.length - 1).textContent = ".";
     }
 
     let prevForecast;
@@ -125,6 +132,10 @@ function getGaleWarnings (doc) {
     // const warningP = doc.querySelector(".warning");
     const galeWarningP = doc.getElementsByClassName("warning")[0];
 
+    if (!galeWarningP) {
+        return [];
+    }
+
     const galeWarningText = galeWarningP.textContent;
 
     const galeWarningLines = galeWarningText.split("\n");
@@ -132,6 +143,7 @@ function getGaleWarnings (doc) {
         ...galeWarningLines.slice(2, galeWarningLines.length - 4),
         galeWarningLines[galeWarningLines.length - 2]
     ].map(w => w.replace(/[,.]$/, ""));
+
     return galeWarnings;
 }
 
