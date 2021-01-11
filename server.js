@@ -70,26 +70,30 @@ function formatOutput(galeWarnings, areaForecasts) {
         warningsEl.childNodes.item(warningsEl.childNodes.length - 1).textContent = ".";
     }
 
+    root.appendChild(outDoc.createTextNode("\nThe area forecasts for the next 24 hours\n"));
+
     let prevForecast;
     let prevForecastEl;
 
     for (const af of areaForecasts) {
         if (af.forecast === prevForecast) {
             const areaEl = outDoc.createElement("Area");
+            areaEl.textContent = af.area;
 
             prevForecastEl.parentNode.insertBefore(areaEl, prevForecastEl);
 
-            areaEl.textContent = af.area;
+            prevForecastEl.parentNode.insertBefore(outDoc.createTextNode("\n"), prevForecastEl);
+
         } else {
             const el = outDoc.createElement("AreaForecast");
-
             root.appendChild(el);
+            root.appendChild(outDoc.createTextNode("\n"));
 
             const areaEl = outDoc.createElement("Area");
-
+            areaEl.textContent = af.area;
             el.appendChild(areaEl);
 
-            areaEl.textContent = af.area;
+            el.appendChild(outDoc.createTextNode("\n"));
 
             const forecastEl = outDoc.createElement("Forecast");
 
@@ -119,8 +123,17 @@ function formatOutput(galeWarnings, areaForecasts) {
             visEl.textContent = fParts[3];
             forecastEl.appendChild(visEl);
 
+            if (fParts.length > 4) {
+                forecastEl.appendChild(outDoc.createTextNode("\n"));
+
+                const icsEl = outDoc.createElement("Icing");
+                icsEl.textContent = fParts[4];
+                forecastEl.appendChild(icsEl);
+            }
+
             prevForecast = af.forecast;
             prevForecastEl = forecastEl;
+
         }
     }
 
