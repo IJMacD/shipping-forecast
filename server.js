@@ -80,9 +80,9 @@ function formatOutput(galeWarnings, areaForecasts) {
             const areaEl = outDoc.createElement("Area");
             areaEl.textContent = af.area;
 
-            prevForecastEl.parentNode.insertBefore(areaEl, prevForecastEl);
+            prevForecastEl?.parentNode?.insertBefore(areaEl, prevForecastEl);
 
-            prevForecastEl.parentNode.insertBefore(outDoc.createTextNode("\n"), prevForecastEl);
+            prevForecastEl?.parentNode?.insertBefore(outDoc.createTextNode("\n"), prevForecastEl);
 
         } else {
             const el = outDoc.createElement("AreaForecast");
@@ -141,7 +141,7 @@ function formatOutput(galeWarnings, areaForecasts) {
     return xml;
 }
 
-function getGaleWarnings (doc) {
+function getGaleWarnings(doc) {
     // const warningP = doc.querySelector(".warning");
     const galeWarningP = doc.getElementsByClassName("warning")[0];
 
@@ -160,7 +160,7 @@ function getGaleWarnings (doc) {
     return galeWarnings;
 }
 
-function getAreaForecasts (doc) {
+function getAreaForecasts(doc) {
     const h3List = doc.getElementsByTagName("h3");
 
     let areaForecastH3;
@@ -207,7 +207,7 @@ function getAreaForecasts (doc) {
     return areaForecasts;
 }
 
-function fetchString (url) {
+function fetchString(url) {
     return new Promise((resolve, reject) => {
         https.get(UPSTREAM_URL, response => {
             let buffer = "";
