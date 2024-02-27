@@ -42,6 +42,10 @@ server.listen(port);
 console.log(`Listening on port ${port}`);
 
 
+/**
+ * @param {string[]} galeWarnings
+ * @param {{ areas: string[]; forecast: string; }[]} areaForecasts
+ */
 function formatOutput(galeWarnings, areaForecasts) {
     const serializer = new xmldom.XMLSerializer();
     const imp = new xmldom.DOMImplementation();
@@ -77,21 +81,36 @@ function formatOutput(galeWarnings, areaForecasts) {
 
     for (const af of areaForecasts) {
         if (af.forecast === prevForecast) {
-            const areaEl = outDoc.createElement("Area");
-            areaEl.textContent = af.area;
+            // We detected duplication
+            // Do our own de-duplication
+            for (const area of af.areas) {
+                const areaEl = outDoc.createElement("Area");
+                areaEl.textContent = area;
 
-            prevForecastEl?.parentNode?.insertBefore(areaEl, prevForecastEl);
+                if (prevForecastEl?.parentNode) {
+                    prevForecastEl.parentNode.insertBefore(outDoc.createTextNode(", "), prevForecastEl);
 
-            prevForecastEl?.parentNode?.insertBefore(outDoc.createTextNode("\n"), prevForecastEl);
-
+                    prevForecastEl.parentNode.insertBefore(areaEl, prevForecastEl);
+                }
+            }
         } else {
             const el = outDoc.createElement("AreaForecast");
             root.appendChild(el);
             root.appendChild(outDoc.createTextNode("\n"));
 
-            const areaEl = outDoc.createElement("Area");
-            areaEl.textContent = af.area;
-            el.appendChild(areaEl);
+            let first = true;
+
+            for (const area of af.areas) {
+                if (!first) {
+                    el.appendChild(outDoc.createTextNode(", "));
+                }
+
+                const areaEl = outDoc.createElement("Area");
+                areaEl.textContent = area;
+                el.appendChild(areaEl);
+
+                first = false;
+            }
 
             el.appendChild(outDoc.createTextNode("\n"));
 
@@ -141,6 +160,9 @@ function formatOutput(galeWarnings, areaForecasts) {
     return xml;
 }
 
+/**
+ * @param {Document} doc
+ */
 function getGaleWarnings(doc) {
     // const warningP = doc.querySelector(".warning");
     const galeWarningP = doc.getElementsByClassName("warning")[0];
@@ -151,7 +173,7 @@ function getGaleWarnings(doc) {
 
     const galeWarningText = galeWarningP.textContent;
 
-    const galeWarningLines = galeWarningText.split("\n");
+    const galeWarningLines = galeWarningText?.split("\n") || [];
     const galeWarnings = [
         ...galeWarningLines.slice(2, galeWarningLines.length - 4),
         galeWarningLines[galeWarningLines.length - 2]
@@ -160,6 +182,9 @@ function getGaleWarnings(doc) {
     return galeWarnings;
 }
 
+/**
+ * @param {Document} doc
+ */
 function getAreaForecasts(doc) {
     const h3List = doc.getElementsByTagName("h3");
 
@@ -167,7 +192,7 @@ function getAreaForecasts(doc) {
 
     for (let i = 0; i < h3List.length; i++) {
         const h3 = h3List.item(i);
-        if (h3.textContent === "The area forecasts for the next 24 hours") {
+        if (h3?.textContent === "The area forecasts for the next 24 hours") {
             areaForecastH3 = h3;
             break;
         }
@@ -178,38 +203,42 @@ function getAreaForecasts(doc) {
     if (areaForecastH3) {
         let heading = areaForecastH3.nextSibling;
 
-        while (true) {
+        while (heading) {
             if (heading.nodeType === doc.TEXT_NODE) {
                 heading = heading.nextSibling;
             }
 
-            if (heading.nodeName !== "h3") {
+            if (heading?.nodeName !== "h3") {
                 break;
             }
 
             let text = heading.nextSibling;
 
-            if (text.nodeType === doc.TEXT_NODE) {
+            if (text?.nodeType === doc.TEXT_NODE) {
                 text = text.nextSibling;
             }
 
-            const area = heading.textContent.trim().split("\n")[0];
+            const area = heading?.textContent?.trim().split("\n")[0] || "";
+            const areas = area.split(",").map((/** @type {string} */ s) => s.trim());
 
             areaForecasts.push({
-                area,
-                forecast: text.textContent.trim(),
+                areas,
+                forecast: text?.textContent?.trim() || "",
             });
 
-            heading = text.nextSibling;
+            heading = text?.nextSibling || null;
         }
     }
 
     return areaForecasts;
 }
 
+/**
+ * @param {string} url
+ */
 function fetchString(url) {
     return new Promise((resolve, reject) => {
-        https.get(UPSTREAM_URL, response => {
+        https.get(url, response => {
             let buffer = "";
 
             response.on("data", chunk => buffer += chunk);
