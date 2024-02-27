@@ -1,0 +1,10 @@
+hostname: "shipping.ijmacd.com"
+appVersion: ""
+web:
+  replicaCount: 1
+  repository:
+    image: docker.io/ijmacd/shipping
+  tls:
+    enabled: false
+  local:
+    enabled: false

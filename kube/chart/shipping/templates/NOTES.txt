@@ -1,0 +1,4 @@
+
+Version {{ .Values.appVersion }} of {{ .Chart.Name }} has been deployed as "{{ .Release.Name }}" in the {{ .Release.Namespace }} namespace.
+
+In a few moments it will be available at https://{{ .Values.hostname }}/
