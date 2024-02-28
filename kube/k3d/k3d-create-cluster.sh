@@ -34,9 +34,7 @@ k3d cluster create ${APPNAME} --config ${SCRIPT_DIR}/k3d-config.yml \
 # done
 
 # Bootstrap the helm dependencies
-for project in "${PROJECTS}"; do
-  helm dependency build $SCRIPT_DIR/../chart/${project}/
-done
+helm dependency build $SCRIPT_DIR/../chart/${APPNAME}/
 
 mkdir -p ~/.kube
 k3d kubeconfig merge ${APPNAME} --output ${KUBECONFIG}

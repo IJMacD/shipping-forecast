@@ -8,6 +8,14 @@ const port = process.env.PORT || 8000;
 
 const server = http.createServer((request, response) => {
 
+    if (request.url === "/style.css") {
+        response.writeHead(200, "OK", { "Content-Type": "text/css" });
+        response.write("ShippingForecast { font-family: sans-serif; max-width: 1200px; margin: 20px auto; } AreaForecast, GaleWarnings { display: block; margin-block-end: 1em; } Area { font-weight: bold; }");
+        response.end();
+        console.log(`${new Date().toISOString()} style`);
+        return;
+    }
+
     fetchString(UPSTREAM_URL).then(data => {
         // console.log(data);
 
@@ -29,6 +37,8 @@ const server = http.createServer((request, response) => {
         response.writeHead(200, "OK", { "Content-Type": "text/xml", "Access-Control-Allow-Origin": "*" });
 
         response.write(`<?xml version="1.0" encoding="UTF-8"?>`);
+
+        response.write(`<?xml-stylesheet href="style.css"?>`);
 
         response.write(xml);
 
@@ -74,7 +84,7 @@ function formatOutput(galeWarnings, areaForecasts) {
         warningsEl.childNodes.item(warningsEl.childNodes.length - 1).textContent = ".";
     }
 
-    root.appendChild(outDoc.createTextNode("\nThe area forecasts for the next 24 hours\n"));
+    root.appendChild(outDoc.createTextNode("\nThe area forecasts for the next 24 hours:\n"));
 
     let prevForecast;
     let prevForecastEl;
@@ -112,7 +122,7 @@ function formatOutput(galeWarnings, areaForecasts) {
                 first = false;
             }
 
-            el.appendChild(outDoc.createTextNode("\n"));
+            el.appendChild(outDoc.createTextNode(" -\n"));
 
             const forecastEl = outDoc.createElement("Forecast");
 
@@ -140,13 +150,23 @@ function formatOutput(galeWarnings, areaForecasts) {
 
             const visEl = outDoc.createElement("Visibility");
             visEl.textContent = fParts[3];
+            // Forecast doesn't use a full stop for the last item. We should add
+            // it.
+            if (!visEl.textContent.endsWith(".")) {
+                visEl.textContent += ".";
+            }
             forecastEl.appendChild(visEl);
 
             if (fParts.length > 4) {
                 forecastEl.appendChild(outDoc.createTextNode("\n"));
 
                 const icsEl = outDoc.createElement("Icing");
+                // Forecast doesn't use a full stop for the last item. We should
+                // add it.
                 icsEl.textContent = fParts[4];
+                if (!icsEl.textContent.endsWith(".")) {
+                    icsEl.textContent += ".";
+                }
                 forecastEl.appendChild(icsEl);
             }
 
