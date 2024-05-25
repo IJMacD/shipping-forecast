@@ -27,17 +27,10 @@ k3d cluster delete ${APPNAME}
 k3d cluster create ${APPNAME} --config ${SCRIPT_DIR}/k3d-config.yml \
   --volume ${SCRIPT_DIR}/../../:/${REPO}/${APPNAME}@all
 
-# for i in "mariadb:11.1"; do
-#   docker pull docker.io/bitnami/${i}
-#   docker tag docker.io/bitnami/${i} ${LOCAL_REGISTRY}/bitnami/${i}
-#   docker push ${LOCAL_REGISTRY}/bitnami/${i}
-# done
-
-# Bootstrap the helm dependencies
-helm dependency build $SCRIPT_DIR/../chart/${APPNAME}/
-
 mkdir -p ~/.kube
-k3d kubeconfig merge ${APPNAME} --output ${KUBECONFIG}
+k3d kubeconfig merge ${APPNAME} --output ${LOCAL_KUBECONFIG}
+
+export KUBECONFIG=$LOCAL_KUBECONFIG
 
 # Apply local secrets
 
